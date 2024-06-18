@@ -36,7 +36,7 @@ def test_reinforce_pipeline(work_dir):
         "--max-keypoints", "3",
         "--min-keypoints", "0",
         "--dropout", "0.0",
-        "--num-workers", "1",
+        "--num-workers", "0",
         "--patch-size", "448",
         "--stop-weight", "0.1",
         "--detector-conf-threshold", "0.50",

@@ -402,7 +402,7 @@ class ReinforceTrainer(Trainer):
             for worst_id in tqdm(worst_ids):
                 worst_env_id = env_ids[worst_id]
                 batch = dataset.__getitem__(env_id)
-                metrics, plot_image = self.eval_on_sample(batch, True)
+                metrics, plot_image = self.eval_on_sample(batch, True, worst_id)
                 plot_images["worst_images"].append(plot_image)
 
         dataset.translations, dataset.rotations = translations, rotations

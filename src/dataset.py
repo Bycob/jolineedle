@@ -74,6 +74,22 @@ class NeedleDataset(Dataset):
                     Position(points[2], points[1]),
                     Position(points[4], points[3]),
                 )
+
+                if (
+                    bbox.bottom_right.y - bbox.up_left.y <= 0
+                    or bbox.bottom_right.x - bbox.up_left.x <= 0
+                ):
+                    raise ValueError(
+                        "Bad bbox (%d, %d, %d, %d) in file %s"
+                        % (
+                            bbox.up_left.x,
+                            bbox.up_left.y,
+                            bbox.bottom_right.x,
+                            bbox.bottom_right.y,
+                            bbox_path,
+                        )
+                    )
+
                 classes.append(points[0])
                 bboxes.append(bbox)
 
@@ -345,35 +361,6 @@ class NeedleDataset(Dataset):
             "bboxes": torch.stack(batch["bboxes"], dim=0),
             "class_id": torch.tensor(batch["class_id"]),
         }
-
-
-def save_patches(patches: torch.Tensor, bboxes: torch.Tensor):
-    """Save the patches and bboxes to disk.
-
-    ---
-    Args:
-        patches: Tensor of patches of shape [n_patches, n_channels, height, width].
-        bboxes: Tensor of bboxes of shape [n_patches, n_bboxes, 6].
-    """
-    # Use torchvision to draw each bbox on the patch.
-    # Then save the patch to disk.
-    # The bboxes are in the format [class_id, cx, cy, w, h, objectivness].
-    for patch, bbox in zip(patches, bboxes):
-        patch = patch.permute(1, 2, 0).cpu().numpy()
-        patch = (patch * 255).astype(np.uint8)
-        patch = Image.fromarray(patch)
-
-        for bbox in bbox.cpu().numpy():
-            _, cx, cy, w, h, _ = bbox
-            # cx = int(cx * patch.width)
-            # cy = int(cy * patch.height)
-            # w = int(w * patch.width)
-            # h = int(h * patch.height)
-            bbox = (cx - w // 2, cy - h // 2, cx + w // 2, cy + h // 2)
-            draw = ImageDraw.Draw(patch)
-            draw.rectangle(bbox, outline="red")
-
-        patch.save(f"patches/{uuid.uuid4()}.png")
 
 
 def complete_to_patch_size(image: torch.Tensor, patch_size: int) -> torch.Tensor:
